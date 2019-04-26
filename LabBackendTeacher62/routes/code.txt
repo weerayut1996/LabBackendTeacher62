@@ -1,0 +1,110 @@
+index.js
+---------------->
+const Express = require('express');
+const bodyParser = require('body-parser');
+
+const app = new Express();
+
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({
+    extended: true
+}));
+
+app.use(function (req, res, next) {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "Content-Type");
+    next();
+});
+
+const port = 3000
+app.listen(port, () => {
+    console.log(`Running on http://localhost:${port}`);
+});
+
+const login = require('./routes/login'); // 
+app.use('/login', login);
+-----------------------------<
+login.js------>
+const express = require("express");
+const router = express.Router();
+const MongoClient = require("mongodb").MongoClient;
+
+router.get("/", (req, res) => {
+  res.send({
+    status: "login"
+  });
+});
+
+router.get("/a", (req, res) => {
+  // frontend ดึงค่าจาก db มาแสดง
+  res.send({
+    status: "login_a"
+  });
+});
+
+router.post("/c", (req, res) => {
+  // front-end ส่งค่าเข้าเก็บใน db
+  console.log(req);
+  var nameVar = req.body.name;
+
+  MongoClient.connect(
+    "mongodb://eofficedb:Airone-22374736@ds255403.mlab.com:55403/eofficedb",
+    {
+      useNewUrlParser: true
+    },
+    function(err, db) {
+      let dbo = db.db("eofficedb");
+      let userObj = {
+        nameToDB: nameVar
+      };
+      dbo.collection("userTesting").insertOne(userObj, function(err, result) {
+        if (err) throw err;
+        res.send({
+          status: "store success",
+          name: nameVar //response
+        });
+      });
+      db.close();
+    }
+  );
+});
+
+// ทดสอบ get ค่าจาก db
+router.get("/showUserTesting", (req, res) => {
+  MongoClient.connect(
+    "mongodb://eofficedb:Airone-22374736@ds255403.mlab.com:55403/eofficedb",
+    {
+      useNewUrlParser: true
+    },
+    function(err, db) {
+      let dbo = db.db("eofficedb");
+      // การ Get จาก Database
+      dbo
+        .collection("userTesting")
+        .find()
+        .limit(100)
+        .toArray(function(err, result) {
+          if (err) throw err;
+          if (result) {
+            res.send({
+              result
+            });
+          } else {
+            res.json({
+              status: "user not found"
+            });
+          }
+        });
+      db.close();
+    }
+  );
+});
+
+module.exports = router;
+<-----------------------------
+database name : framework
+password : framework62
+--------------------------
+url connection mongodb : mongodb://framework:framework62@ds147096.mlab.com:47096/frameworkdb
+---------------------------
+
