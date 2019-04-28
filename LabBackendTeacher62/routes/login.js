@@ -42,11 +42,18 @@ router.post("/register", (req, res) => {
   var nameVar = req.body.username; // name คือตัวที่พิมลง postman
   var passwordVar = req.body.password; // password พิมค่าลง postman
   MongoClient.connect(
-    "mongodb://framework:framework62@ds147096.mlab.com:47096/frameworkdb", {
+    "mongodb+srv://weerayut:22374736@cluster0-4wunc.mongodb.net/newDatabase62?retryWrites=true", {
       useNewUrlParser: true
     },
     function (err, db) {
-      let dbo = db.db("frameworkdb");
+      if (err) {
+
+        res.sendStatus(404);
+
+        return;
+
+      }
+      let dbo = db.db("newDatabase62");
       let userObj = {
         rank: rankVar,
         first_name: first_nameVar,
@@ -57,7 +64,15 @@ router.post("/register", (req, res) => {
         password: passwordVar // password คือค่า attribute ใน db
       };
       dbo.collection("userLoginTable").insertOne(userObj, function (err, result) {
-        if (err) throw err;
+        if (err) {
+
+          res.send({
+
+            status: false
+
+          });
+
+        }
         res.send({
           status: "store success",
           name: nameVar //response
